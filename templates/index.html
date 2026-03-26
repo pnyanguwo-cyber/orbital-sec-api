@@ -69,15 +69,8 @@
         }
 
         @keyframes scan-vertical {
-
-            0%,
-            100% {
-                top: 0%;
-            }
-
-            50% {
-                top: 100%;
-            }
+            0%, 100% { top: 0%; }
+            50% { top: 100%; }
         }
 
         .status-strip {
@@ -93,14 +86,11 @@
         }
 
         @keyframes status-pulse {
-
-            0%,
-            100% {
+            0%, 100% {
                 opacity: 0.2;
                 transform: scale(1);
                 filter: blur(0px);
             }
-
             50% {
                 opacity: 1;
                 transform: scale(1.1);
@@ -109,23 +99,9 @@
             }
         }
 
-        .dot-green {
-            background: #22c55e;
-            color: #22c55e;
-            animation: status-pulse 2s infinite 0s;
-        }
-
-        .dot-red {
-            background: #ef4444;
-            color: #ef4444;
-            animation: status-pulse 2s infinite 0.6s;
-        }
-
-        .dot-blue {
-            background: #3b82f6;
-            color: #3b82f6;
-            animation: status-pulse 2s infinite 1.2s;
-        }
+        .dot-green { background: #22c55e; color: #22c55e; animation: status-pulse 2s infinite 0s; }
+        .dot-red { background: #ef4444; color: #ef4444; animation: status-pulse 2s infinite 0.6s; }
+        .dot-blue { background: #3b82f6; color: #3b82f6; animation: status-pulse 2s infinite 1.2s; }
 
         #bg-canvas {
             position: fixed;
@@ -140,15 +116,13 @@
 <body class="selection:bg-blue-500/30">
     <canvas id="bg-canvas"></canvas>
 
-    <header
-        class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#07070c]/80 backdrop-blur-xl border-b border-white/5">
+    <header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#07070c]/80 backdrop-blur-xl border-b border-white/5">
         <div class="flex items-center gap-4">
             <div class="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <span class="material-symbols-outlined text-blue-500">satellite_alt</span>
             </div>
             <div>
-                <h1 class="font-mono font-bold text-lg tracking-tighter uppercase">ORBITAL SEC <span
-                        class="text-white/20">v1.1.2</span></h1>
+                <h1 class="font-mono font-bold text-lg tracking-tighter uppercase">ORBITAL SEC <span class="text-white/20">v1.1.2</span></h1>
                 <div class="flex items-center gap-3">
                     <div class="status-strip">
                         <div class="dot dot-green"></div>
@@ -167,30 +141,25 @@
 
     <main class="pt-28 pb-24 px-6 max-w-7xl mx-auto grid grid-cols-12 gap-6">
         <div class="col-span-12 lg:col-span-8 space-y-6">
-            <section id="capture-area"
-                class="glass-panel rounded-3xl p-6 min-h-[500px] flex flex-col relative overflow-hidden">
+            <section id="capture-area" class="glass-panel rounded-3xl p-6 min-h-[500px] flex flex-col relative overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xs font-mono text-blue-500 uppercase tracking-[0.2em]">Visual Trace Engine //
-                        Satellite</h2>
+                    <h2 class="text-xs font-mono text-blue-500 uppercase tracking-[0.2em]">Visual Trace Engine // Satellite</h2>
                     <span class="text-[10px] font-mono text-white/20" id="clock">--:--:--</span>
                 </div>
 
                 <div id="map-container">
                     <div class="scanner-line"></div>
                     <div id="map"></div>
-                    <div
-                        class="absolute bottom-4 left-4 z-[1000] bg-black/70 backdrop-blur-md p-3 rounded-xl border border-white/10 font-mono text-[10px] pointer-events-none">
+                    <div class="absolute bottom-4 left-4 z-[1000] bg-black/70 backdrop-blur-md p-3 rounded-xl border border-white/10 font-mono text-[10px] pointer-events-none">
                         <p class="text-blue-400">LAT: <span id="latC">-17.36</span></p>
                         <p class="text-blue-400">LON: <span id="lonC">30.20</span></p>
                     </div>
                 </div>
 
                 <div class="mt-6 flex gap-3">
-                    <input id="domainInput" type="text" placeholder="ENTER TARGET DOMAIN..."
-                        onkeydown="if(event.key==='Enter') runScan()"
+                    <input id="domainInput" type="text" placeholder="ENTER TARGET DOMAIN..." onkeydown="if(event.key==='Enter') runScan()"
                         class="flex-grow bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-mono text-sm text-blue-400 outline-none focus:border-blue-500/50 transition-all">
-                    <button onclick="runScan()"
-                        class="bg-blue-600 hover:bg-blue-500 px-8 rounded-xl font-mono text-xs font-bold transition-all active:scale-95 text-white uppercase">Initiate_Trace</button>
+                    <button onclick="runScan()" class="bg-blue-600 hover:bg-blue-500 px-8 rounded-xl font-mono text-xs font-bold transition-all active:scale-95 text-white uppercase">Initiate_Trace</button>
                 </div>
             </section>
         </div>
@@ -201,8 +170,7 @@
                 <div class="space-y-4">
                     <div class="p-4 bg-blue-500/5 rounded-2xl border border-white/5">
                         <p class="text-[9px] text-white/30 uppercase mb-1">Target IP</p>
-                        <p id="resIP" class="text-blue-400 font-mono font-bold text-lg tracking-tight">---.---.---.---
-                        </p>
+                        <p id="resIP" class="text-blue-400 font-mono font-bold text-lg tracking-tight">---.---.---.---</p>
                     </div>
                     <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
                         <p class="text-[9px] text-white/30 uppercase mb-1">Geospatial Node</p>
@@ -217,11 +185,8 @@
 
             <section class="glass-panel p-6 rounded-3xl border-l-4 border-red-500/30">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-[10px] font-mono uppercase text-white/40 tracking-widest">Threat Intel (AbuseIPDB)
-                    </h3>
-                    <span id="threatLevel"
-                        class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/20 uppercase">No
-                        Data</span>
+                    <h3 class="text-[10px] font-mono uppercase text-white/40 tracking-widest">Threat Intel (AbuseIPDB)</h3>
+                    <span id="threatLevel" class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/20 uppercase">No Data</span>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between items-end">
@@ -229,15 +194,13 @@
                         <p id="abuseScore" class="text-xl font-mono font-bold text-white">--%</p>
                     </div>
                     <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                        <div id="scoreBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%">
-                        </div>
+                        <div id="scoreBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
                     </div>
                 </div>
             </section>
 
             <section class="glass-panel p-6 rounded-3xl">
-                <h3 class="text-[10px] font-mono uppercase text-white/40 mb-4 tracking-widest">Registration Data (WHOIS)
-                </h3>
+                <h3 class="text-[10px] font-mono uppercase text-white/40 mb-4 tracking-widest">Registration Data (WHOIS)</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-[8px] text-white/30 uppercase">Created</p>
@@ -256,25 +219,21 @@
                     <span class="text-green-500 text-[10px] font-mono animate-pulse uppercase">Live</span>
                 </div>
                 <p id="uptime" class="text-3xl font-mono font-bold text-white tracking-tighter">00:00:00:00</p>
-                <button onclick="downloadReport()"
-                    class="w-full mt-6 py-3 border border-blue-500/30 rounded-xl font-mono text-[10px] text-blue-400 hover:bg-blue-500/10 transition-all uppercase tracking-widest">EXPORT
-                    INTEL (.TXT)</button>
+                <button onclick="downloadReport()" class="w-full mt-6 py-3 border border-blue-500/30 rounded-xl font-mono text-[10px] text-blue-400 hover:bg-blue-500/10 transition-all uppercase tracking-widest">EXPORT INTEL (.TXT)</button>
             </section>
         </div>
     </main>
 
-    <footer
-        class="fixed bottom-0 w-full z-50 px-8 py-4 bg-black/90 border-t border-white/5 flex justify-between items-center">
+    <footer class="fixed bottom-0 w-full z-50 px-8 py-4 bg-black/90 border-t border-white/5 flex justify-between items-center">
         <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-sm text-blue-500">verified_user</span>
-            <span class="text-[10px] font-mono text-blue-500 font-bold tracking-widest uppercase">CFI Affiliate // Cyber
-                Foundation of Investigation</span>
+            <span class="text-[10px] font-mono text-blue-500 font-bold tracking-widest uppercase">CFI Affiliate // Cyber Foundation of Investigation</span>
         </div>
         <p class="text-[9px] font-mono text-white/20 uppercase hidden sm:block">Protected by Sentinel Africa AI</p>
     </footer>
 
     <script>
-        // CORE CONFIG - Pointing to your Render Backend
+        // CORE CONFIG
         const API_BASE = "https://orbital-sec-api.onrender.com";
 
         // 1. Map Init
@@ -324,7 +283,7 @@
         window.addEventListener('resize', initNodes);
         initNodes(); drawNodes();
 
-        // 4. Trace Logic (Now using Proxy Routes)
+        // 4. Trace Logic
         async function runScan() {
             const domain = document.getElementById('domainInput').value.trim();
             if (!domain) return;
@@ -334,7 +293,6 @@
             document.getElementById('threatLevel').innerText = "ANALYZING...";
 
             try {
-                // Main Geo Scan
                 const res = await fetch(`${API_BASE}/scan/${domain}`);
                 const data = await res.json();
 
@@ -350,10 +308,7 @@
                     marker = L.circleMarker([data.lat, data.lon], { color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.4, radius: 15 }).addTo(map);
                     map.flyTo([data.lat, data.lon], 9, { duration: 3 });
 
-                    // Fetch Abuse Intel via Proxy
                     fetchAbuseData(targetIP);
-
-                    // Fetch WHOIS via Proxy
                     fetchWhoisData(domain);
                 } else {
                     document.getElementById('resIP').innerText = "NOT_FOUND";
@@ -382,18 +337,28 @@
             }
         }
 
+        // --- NEW UPDATED WHOIS FUNCTION ---
         async function fetchWhoisData(domain) {
             try {
                 const res = await fetch(`${API_BASE}/proxy/whois/${domain}`);
                 const data = await res.json();
-
+                
+                // 1. Get Creation Date
                 const created = data.events?.find(e => e.eventAction === 'registration')?.eventDate;
                 document.getElementById('whoisCreated').innerText = created ? new Date(created).toLocaleDateString() : "PRIVATE";
 
-                const registrarEntry = data.entities?.find(ent => ent.roles.includes('registrar'));
-                document.getElementById('whoisRegistrar').innerText = registrarEntry ? registrarEntry.vcardArray[1][2][3] : "UNKNOWN";
+                // 2. Get Registrar (Bulletproof Logic)
+                const registrarEntity = data.entities?.find(ent => ent.roles.includes('registrar'));
+                
+                if (registrarEntity && registrarEntity.vcardArray) {
+                    const fnEntry = registrarEntity.vcardArray[1].find(item => item[0] === 'fn');
+                    document.getElementById('whoisRegistrar').innerText = fnEntry ? fnEntry[3] : "UNKNOWN";
+                } else {
+                    document.getElementById('whoisRegistrar').innerText = "PROTECTED";
+                }
             } catch (e) {
-                document.getElementById('whoisRegistrar').innerText = "QUERY_ERR";
+                console.error("WHOIS Error:", e);
+                document.getElementById('whoisRegistrar').innerText = "NOT_FOUND";
             }
         }
 
@@ -415,7 +380,6 @@ Registrar: ${document.getElementById('whoisRegistrar').innerText}
 END OF TRACE REPORT // AUTH: P. NYANGUWO
 CFI - CYBER FOUNDATION OF INVESTIGATION
 ==================================================`;
-            ;
 
             const blob = new Blob([reportContent.trim()], { type: 'text/plain' });
             const link = document.createElement('a');
@@ -425,5 +389,4 @@ CFI - CYBER FOUNDATION OF INVESTIGATION
         }
     </script>
 </body>
-
 </html>
