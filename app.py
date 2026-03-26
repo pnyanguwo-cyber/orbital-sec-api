@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 import requests
+import re
 
 app = Flask(__name__)
 # Enables cross-origin requests so your dashboard can talk to the engine
@@ -10,11 +11,61 @@ CORS(app)
 # Your AbuseIPDB Key is hidden here on the server side for security
 ABUSE_KEY = 'a28bea8b96e95db1190ff804387c7400b457b2a5934e409a8e36e9bfc620384ecf59d9eaec3ad33b'
 
+# --- IDS ENGINE LOGIC ---
+def sentinel_ids_scan(payload):
+    """Core logic to scan payloads for attack signatures"""
+    signatures = {
+        "SQL Injection": {
+            "pattern": r"(UNION\s+SELECT|INSERT\s+INTO|DROP\s+TABLE|--|' OR '1'='1')",
+            "severity": "CRITICAL"
+        },
+        "Cross-Site Scripting (XSS)": {
+            "pattern": r"(<script>|javascript:|onerror=|alert\(|%3Cscript%3E)",
+            "severity": "HIGH"
+        },
+        "Path Traversal": {
+            "pattern": r"(\.\./\.\./|/etc/passwd|/windows/win.ini|%2e%2e%2f)",
+            "severity": "HIGH"
+        },
+        "Remote Command Execution": {
+            "pattern": r"(;\s*whoami|;\s*ls|\|\s*cat|&&\s*net\s*user)",
+            "severity": "CRITICAL"
+        }
+    }
+
+    results = []
+    for attack, data in signatures.items():
+        match = re.search(data["pattern"], payload, re.IGNORECASE)
+        if match:
+            results.append({
+                "type": attack,
+                "severity": data["severity"],
+                "detected_pattern": match.group()
+            })
+    return results
+
 # --- FRONTEND ROUTE ---
 @app.route('/')
 def home():
     """Serves the Orbital Sec Dashboard (must be in /templates folder)"""
     return render_template('index.html')
+
+# --- IDS API ROUTE ---
+@app.route('/api/v1/ids/analyze', methods=['POST'])
+def analyze_payload():
+    """API Endpoint to process IDS requests from the dashboard"""
+    data = request.get_json()
+    if not data or 'payload' not in data:
+        return jsonify({"status": "error", "message": "No payload provided"}), 400
+    
+    payload = data['payload']
+    detections = sentinel_ids_scan(payload)
+    
+    return jsonify({
+        "status": "success",
+        "threat_count": len(detections),
+        "detections": detections
+    })
 
 # --- API SCAN ROUTE ---
 @app.route('/scan/<target>')
@@ -47,7 +98,7 @@ def mvp_scan(target):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- PROXY ROUTES (To fix CORS errors) ---
+# --- PROXY ROUTES ---
 @app.route('/proxy/abuse/<ip>')
 def proxy_abuse(ip):
     """Fetches Threat Intel from AbuseIPDB safely via Backend"""
