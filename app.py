@@ -1,16 +1,25 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-# Allows your frontend (wherever it's hosted) to talk to this Render backend
+# Enables cross-origin requests so your dashboard can talk to the engine
 CORS(app)
 
-# YOUR CONFIGURATION
+# CONFIGURATION
+# Your AbuseIPDB Key is hidden here on the server side for security
 ABUSE_KEY = 'a28bea8b96e95db1190ff804387c7400b457b2a5934e409a8e36e9bfc620384ecf59d9eaec3ad33b'
 
+# --- FRONTEND ROUTE ---
+@app.route('/')
+def home():
+    """Serves the Orbital Sec Dashboard (must be in /templates folder)"""
+    return render_template('index.html')
+
+# --- API SCAN ROUTE ---
 @app.route('/scan/<target>')
 def mvp_scan(target):
+    """Main Geo-location and Port Scan Engine"""
     try:
         # 1. Get IP and Basic Geo-Data
         geo_req = requests.get(f"http://ip-api.com/json/{target}?fields=status,message,country,city,lat,lon,isp,query")
@@ -24,7 +33,6 @@ def mvp_scan(target):
         scan_text = scan_req.text
         scan_lines = [line.strip() for line in scan_text.split('\n') if "open" in line or "tcp" in line]
 
-        # Return the core data needed for the UI
         return jsonify({
             "status": "success",
             "ip": geo_data.get('query'),
@@ -39,6 +47,7 @@ def mvp_scan(target):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+# --- PROXY ROUTES (To fix CORS errors) ---
 @app.route('/proxy/abuse/<ip>')
 def proxy_abuse(ip):
     """Fetches Threat Intel from AbuseIPDB safely via Backend"""
@@ -59,7 +68,6 @@ def proxy_whois(domain):
     url = f"https://rdap.org/domain/{domain}"
     try:
         response = requests.get(url)
-        # Check if the response is valid JSON
         if response.status_code == 200:
             return jsonify(response.json())
         else:
@@ -68,5 +76,5 @@ def proxy_whois(domain):
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Use 0.0.0.0 for Render deployment compatibility
+    # host='0.0.0.0' is required for Render to accept external connections
     app.run(host='0.0.0.0', port=5000)
