@@ -69,24 +69,27 @@ def analyze_payload():
         "detections": detections
     })
 
-# --- UPDATED SCAN ROUTE (Matching New HTML) ---
+# --- UPDATED SCAN ROUTE (Matching New HTML + Address Fix) ---
 @app.route('/scan/<target>')
 def mvp_scan(target):
     """Updated Geo-location, WHOIS, and Port Scan Engine"""
     try:
+        # CLEAN INPUT: Strips http/https and trailing paths to fix geolocation resolution
+        clean_target = target.strip().replace("https://", "").replace("http://", "").split('/')[0]
+
         # 1. GEOLOCATION DATA (ip-api)
-        geo_url = f"http://ip-api.com/json/{target}?fields=status,message,country,city,lat,lon,isp,org,query"
+        geo_url = f"http://ip-api.com/json/{clean_target}?fields=status,message,country,city,lat,lon,isp,org,query"
         geo_data = requests.get(geo_url).json()
 
         if geo_data.get('status') == 'fail':
-            return jsonify({"status": "error", "message": "Target not found"}), 404
+            return jsonify({"status": "error", "message": f"Target {clean_target} not found"}), 404
 
         # 2. WHOIS DATA (Established & Registrar)
         established_date = "N/A"
         registrar_name = "N/A"
         
         try:
-            w = whois.whois(target)
+            w = whois.whois(clean_target)
             registrar_name = w.registrar if w.registrar else "N/A"
             
             if w.creation_date:
@@ -98,7 +101,7 @@ def mvp_scan(target):
             pass # Keep N/A if WHOIS fails
 
         # 3. PORT SCAN (HackerTarget)
-        scan_req = requests.get(f"https://api.hackertarget.com/nmap/?q={target}")
+        scan_req = requests.get(f"https://api.hackertarget.com/nmap/?q={clean_target}")
         scan_lines = [line.strip() for line in scan_req.text.split('\n') if "open" in line or "tcp" in line]
 
         # 4. COMBINED RESPONSE
@@ -148,5 +151,4 @@ def proxy_whois(domain):
 
 if __name__ == '__main__':
     # host='0.0.0.0' is required for Render/external access
-    # Using debug=True for development; change for production
     app.run(host='0.0.0.0', port=5000, debug=True)
