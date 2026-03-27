@@ -2,6 +2,8 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 import requests
 import re
+import whois  # Ensure you ran 'pip install python-whois'
+from datetime import datetime
 
 app = Flask(__name__)
 # Enables cross-origin requests so your dashboard can talk to the engine
@@ -67,32 +69,50 @@ def analyze_payload():
         "detections": detections
     })
 
-# --- API SCAN ROUTE ---
+# --- UPDATED SCAN ROUTE (Matching New HTML) ---
 @app.route('/scan/<target>')
 def mvp_scan(target):
-    """Main Geo-location and Port Scan Engine"""
+    """Updated Geo-location, WHOIS, and Port Scan Engine"""
     try:
-        # 1. Get IP and Basic Geo-Data
-        geo_req = requests.get(f"http://ip-api.com/json/{target}?fields=status,message,country,city,lat,lon,isp,query")
-        geo_data = geo_req.json()
+        # 1. GEOLOCATION DATA (ip-api)
+        geo_url = f"http://ip-api.com/json/{target}?fields=status,message,country,city,lat,lon,isp,org,query"
+        geo_data = requests.get(geo_url).json()
 
         if geo_data.get('status') == 'fail':
             return jsonify({"status": "error", "message": "Target not found"}), 404
 
-        # 2. Use HackerTarget API for a "Pseudo-Nmap" Scan
-        scan_req = requests.get(f"https://api.hackertarget.com/nmap/?q={target}")
-        scan_text = scan_req.text
-        scan_lines = [line.strip() for line in scan_text.split('\n') if "open" in line or "tcp" in line]
+        # 2. WHOIS DATA (Established & Registrar)
+        established_date = "N/A"
+        registrar_name = "N/A"
+        
+        try:
+            w = whois.whois(target)
+            registrar_name = w.registrar if w.registrar else "N/A"
+            
+            if w.creation_date:
+                creat = w.creation_date
+                # Handle cases where creation_date is a list
+                dt = creat[0] if isinstance(creat, list) else creat
+                established_date = dt.strftime("%Y") 
+        except Exception:
+            pass # Keep N/A if WHOIS fails
 
+        # 3. PORT SCAN (HackerTarget)
+        scan_req = requests.get(f"https://api.hackertarget.com/nmap/?q={target}")
+        scan_lines = [line.strip() for line in scan_req.text.split('\n') if "open" in line or "tcp" in line]
+
+        # 4. COMBINED RESPONSE
         return jsonify({
             "status": "success",
             "ip": geo_data.get('query'),
             "isp": geo_data.get('isp'),
-            "country": geo_data.get('country'),
-            "city": geo_data.get('city'),
+            "org": geo_data.get('org', 'N/A'),
+            "city": f"{geo_data.get('city')}, {geo_data.get('country')}",
             "lat": geo_data.get('lat'),
             "lon": geo_data.get('lon'),
-            "details": scan_lines[:5] 
+            "created": established_date,
+            "registrar": registrar_name,
+            "details": scan_lines[:5]
         })
 
     except Exception as e:
@@ -127,5 +147,6 @@ def proxy_whois(domain):
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # host='0.0.0.0' is required for Render to accept external connections
-    app.run(host='0.0.0.0', port=5000)
+    # host='0.0.0.0' is required for Render/external access
+    # Using debug=True for development; change for production
+    app.run(host='0.0.0.0', port=5000, debug=True)
