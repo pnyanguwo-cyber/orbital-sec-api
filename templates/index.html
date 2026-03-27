@@ -125,7 +125,6 @@
         .spectrum-bar { animation: spectrum 0.8s ease-in-out infinite alternate; transform-origin: bottom; }
         @keyframes spectrum { from { transform: scaleY(0.2); } to { transform: scaleY(1); } }
 
-        /* Mobile specific sidebar logic */
         @media (max-width: 768px) {
             #main-sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
             #main-sidebar.open { transform: translateX(0); }
@@ -208,7 +207,7 @@
                         </h3>
                     </div>
                     <div id="coords-display" class="flex items-center gap-2 text-[9px] font-mono text-primary/50">
-                        LAT: -18.8248 | LONG: 29.8191
+                        LAT: 0.0000 | LONG: 0.0000
                     </div>
                 </div>
 
@@ -238,7 +237,7 @@
                 </div>
 
                 <div class="p-4 bg-surface-container-high flex flex-col md:flex-row gap-3">
-                    <input id="target-input" class="flex-1 bg-surface-container-lowest border-0 border-b border-outline focus:border-primary focus:ring-0 text-xs font-mono py-3 px-4 placeholder:text-outline/40" placeholder="ENTER_TARGET_UUID_OR_IP..." type="text"/>
+                    <input id="target-input" class="flex-1 bg-surface-container-lowest border-0 border-b border-outline focus:border-primary focus:ring-0 text-xs font-mono py-3 px-4 placeholder:text-outline/40" placeholder="ENTER_TARGET_DOMAIN_OR_IP..." type="text"/>
                     <button id="trace-btn" class="bg-primary/10 border border-primary text-primary px-8 py-3 md:py-0 text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-on-primary transition-all">
                         Initiate_Trace
                     </button>
@@ -294,48 +293,12 @@
     </div>
 
     <div id="page-ids" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
-        <div class="md:col-span-12">
-            <section class="bg-surface-container border-l-2 border-primary">
-                <div class="p-4 border-b border-outline-variant/10 flex flex-wrap justify-between items-center gap-2">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">security</span>
-                        <h3 class="font-headline text-xs font-bold tracking-widest uppercase">Sentinel IDS System Monitor</h3>
-                    </div>
-                    <span class="text-[9px] font-mono text-primary animate-pulse">SYSTEM_STATE: ARMED</span>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-1 p-4 bg-surface-container-low">
-                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
-                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Inbound Packets</p>
-                        <p id="packets-in" class="text-2xl font-mono text-primary font-light">1,240</p>
-                    </div>
-                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
-                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Blocked Payloads</p>
-                        <p id="payloads-blocked" class="text-2xl font-mono text-secondary font-light">42</p>
-                    </div>
-                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
-                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Anomalies Detected</p>
-                        <p id="anomalies-count" class="text-2xl font-mono text-error font-light">03</p>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-surface-container-lowest">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-[10px] font-headline font-bold uppercase tracking-widest">Real-time Threat Feed</span>
-                        <span class="text-[9px] font-mono text-outline">AUTO_REFRESH: 500ms</span>
-                    </div>
-                    <div id="ids-log" class="h-64 overflow-y-auto font-mono text-[10px] space-y-1 pr-2">
-                        <div class="text-primary/40">[SYS] IDS initialized...</div>
-                        <div class="text-primary/40">[SYS] Firewall rules sync complete.</div>
-                        <div class="text-primary/40">[SYS] Monitoring node: CHINHOYI_CENTRAL</div>
-                    </div>
-                </div>
-
-                <div class="p-4 border-t border-outline-variant/10 flex flex-wrap gap-4">
-                    <button id="lockout-btn" class="flex-1 md:flex-none bg-error/10 border border-error/40 text-error text-[10px] font-bold px-4 py-2 uppercase hover:bg-error hover:text-white transition-all">Emergency Lockout</button>
-                    <button id="flush-btn" class="flex-1 md:flex-none bg-primary/10 border border-primary/40 text-primary text-[10px] font-bold px-4 py-2 uppercase hover:bg-primary hover:text-white transition-all">Flush Logs</button>
-                </div>
-            </section>
+        <div class="md:col-span-12 bg-surface-container p-8 border border-outline-variant/10">
+             <h3 class="font-headline text-lg font-bold text-primary mb-4">SENTINEL_IDS_LOGS</h3>
+             <div class="font-mono text-xs text-on-surface-variant space-y-2">
+                 <p>[OK] MONITORING_PACKET_TRAFFIC...</p>
+                 <p>[OK] NO_INTRUSIONS_DETECTED</p>
+             </div>
         </div>
     </div>
 </main>
@@ -353,10 +316,8 @@
 </footer>
 
 <script>
-    // New function to handle mobile menu
     function toggleSidebar() {
-        const sidebar = document.getElementById('main-sidebar');
-        sidebar.classList.toggle('open');
+        document.getElementById('main-sidebar').classList.toggle('open');
     }
 
     function switchPage(pageId) {
@@ -369,12 +330,12 @@
             tracePage.classList.add('hidden');
             idsPage.classList.remove('hidden');
             navIds.className = "w-full flex items-center gap-3 px-4 py-3 bg-[#1f1f25] text-[#adc6ff] border-l-4 border-[#adc6ff] font-headline text-xs font-medium tracking-widest transition-all";
-            navTrace.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 transition-opacity font-headline text-xs font-medium tracking-widest transition-all";
+            navTrace.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 font-headline text-xs font-medium tracking-widest transition-all";
         } else {
             idsPage.classList.add('hidden');
             tracePage.classList.remove('hidden');
             navTrace.className = "w-full flex items-center gap-3 px-4 py-3 bg-[#1f1f25] text-[#adc6ff] border-l-4 border-[#adc6ff] font-headline text-xs font-medium tracking-widest transition-all";
-            navIds.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 transition-opacity font-headline text-xs font-medium tracking-widest transition-all";
+            navIds.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 font-headline text-xs font-medium tracking-widest transition-all";
         }
     }
 
@@ -384,7 +345,7 @@
         const mapTime = document.getElementById('current-time');
         const mapDate = document.getElementById('current-date');
         
-        // Timer and General Updates
+        // Timer Logic
         setInterval(() => {
             const now = new Date();
             const elapsed = Date.now() - startTime;
@@ -399,31 +360,8 @@
             document.getElementById('ping-display').innerText = `${ping}ms`;
         }, 1000);
 
-        // IDS Log Simulator
-        const idsLog = document.getElementById('ids-log');
-        const threatTypes = ["Port Scan", "SQL Injection Attempt", "DDoS Burst", "Brute Force", "Malformed Packet"];
-        const ips = ["192.168.1.105", "45.77.12.4", "103.21.244.0", "141.101.64.0"];
-
-        setInterval(() => {
-            if (document.getElementById('page-ids').classList.contains('hidden')) return;
-            
-            const logEntry = document.createElement('div');
-            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
-            const type = threatTypes[Math.floor(Math.random() * threatTypes.length)];
-            const ip = ips[Math.floor(Math.random() * ips.length)];
-            
-            logEntry.className = "border-l border-primary/20 pl-2 mb-1 log-item";
-            logEntry.innerHTML = `<span class="text-outline">[${time}]</span> <span class="text-secondary">ALERT</span>: ${type} from <span class="text-primary underline">${ip}</span> - <span class="text-error">MITIGATED</span>`;
-            
-            idsLog.prepend(logEntry);
-            if (idsLog.children.length > 50) idsLog.lastChild.remove();
-
-            // Randomize IDS stats
-            document.getElementById('packets-in').innerText = (parseInt(document.getElementById('packets-in').innerText.replace(',','')) + Math.floor(Math.random()*10)).toLocaleString();
-        }, 2000);
-
         // Map Initialization
-        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-18.8248, 29.8191], 3);
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([0, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
         const scanBtn = document.getElementById('trace-btn');
@@ -432,27 +370,54 @@
         const statusText = document.getElementById('status-display');
         const overlay = document.getElementById('map-overlay');
 
+        // TRACE EXECUTION LOGIC
         const startScan = async () => {
             const target = input.value.trim();
             if (!target) return;
 
-            statusText.innerText = `TRACING_TARGET: ${target}`;
+            statusText.innerText = `RESOLVING_TARGET: ${target}`;
             statusText.classList.replace('text-primary', 'text-secondary');
-            scannerLine.style.animationDuration = '1s';
+            scannerLine.style.animationDuration = '0.5s';
 
             try {
-                setTimeout(() => {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => { overlay.style.display = 'none'; }, 1000);
-                    map.flyTo([-18.8248, 29.8191], 13, { animate: true, duration: 3 });
-                    L.circleMarker([-18.8248, 29.8191], { color: '#ffb3ad', radius: 10 }).addTo(map);
-                    
-                    document.getElementById('active-ip-display').innerText = target.includes('.') ? target : "192.168.1.1";
-                    document.getElementById('threat-level').innerText = "CRITICAL";
-                    document.getElementById('threat-bar').style.width = "95%";
-                }, 2000);
+                const response = await fetch(`http://ip-api.com/json/${target}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const { lat, lon, city, country, query, isp } = data;
+
+                    setTimeout(() => {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+
+                        map.flyTo([lat, lon], 13, { animate: true, duration: 3 });
+                        
+                        L.circleMarker([lat, lon], { 
+                            color: '#ffb3ad', 
+                            fillColor: '#ffb3ad', 
+                            fillOpacity: 0.5, 
+                            radius: 12 
+                        }).addTo(map).bindPopup(`<b>TARGET_LOCKED</b><br>${query}`).openPopup();
+
+                        // Update Sidebar & UI Elements
+                        document.getElementById('active-ip-display').innerText = query;
+                        document.getElementById('coords-display').innerText = `LAT: ${lat.toFixed(4)} | LONG: ${lon.toFixed(4)}`;
+                        document.getElementById('whois-output').innerHTML = `
+                            CITY: ${city.toUpperCase()}<br>
+                            COUNTRY: ${country.toUpperCase()}<br>
+                            ISP: ${isp.toUpperCase()}<br>
+                            STATUS: TRACE_COMPLETE
+                        `;
+                        
+                        document.getElementById('threat-level').innerText = "IDENTIFIED";
+                        document.getElementById('threat-bar').style.width = "70%";
+                    }, 1500);
+                } else {
+                    statusText.innerText = "ERROR: INVALID_TARGET";
+                }
             } catch (err) {
-                console.error("Backend offline.");
+                console.error("Trace Failed:", err);
+                statusText.innerText = "ERROR: NODE_OFFLINE";
             } finally {
                 setTimeout(() => {
                     scannerLine.style.animationDuration = '4s';
@@ -464,68 +429,6 @@
 
         scanBtn.addEventListener('click', startScan);
         input.addEventListener('keypress', (e) => { if (e.key === 'Enter') startScan(); });
-
-        // --- EXPORT INTEL LOGIC UPDATED ---
-        const exportBtn = document.getElementById('export-intel-btn');
-        exportBtn.addEventListener('click', () => {
-            const now = new Date();
-            const timestamp = now.toLocaleString();
-            const activeIP = document.getElementById('active-ip-display').innerText;
-            const threatLevel = document.getElementById('threat-level').innerText;
-
-            const intelReport = `
-==================================================
-ORBITAL SEC | SENTINEL INTEL REPORT
-Generated: ${timestamp}
-==================================================
-
-[ TARGET INFORMATION ]
-Domain:      ${activeIP === "0.0.0.0" ? "UNDEFINED" : "DETECTED_HOST"}
-IP Address:  ${activeIP}
-ISP:         ORBITAL_VIRTUAL_NET
-
-[ GEOSPATIAL TELEMETRY ]
-Location:    CHINHOYI, ZIMBABWE, MASHONALAND
-Latitude:    -18.8248
-Longitude:   29.8191
-
-[ THREAT INTELLIGENCE ]
-Abuse Confidence Score: ${threatLevel === "CRITICAL" ? "98%" : "05%"}
-Threat Classification:  ${threatLevel}
-
-[ REGISTRATION DATA (WHOIS) ]
-Registration Date:      ${new Date().toLocaleDateString()}
-Primary Registrar:      UNKNOWN
-
-==================================================
-END OF TRACE REPORT // AUTH: P. NYANGUWO
-==================================================`.trim();
-            
-            const blob = new Blob([intelReport], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SENTINEL_REPORT_${Date.now()}.txt`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
-
-        // Flush Logs Button
-        const flushBtn = document.getElementById('flush-btn');
-        flushBtn.addEventListener('click', () => {
-            idsLog.innerHTML = '<div class="text-secondary animate-pulse">[SYS] LOGS_FLUSHED_SUCCESSFULLY</div>';
-            setTimeout(() => {
-                idsLog.innerHTML = '<div class="text-primary/40">[SYS] Monitoring resumed...</div>';
-            }, 2000);
-        });
-
-        // Emergency Lockout Button
-        const lockoutBtn = document.getElementById('lockout-btn');
-        lockoutBtn.addEventListener('click', () => {
-            document.body.style.filter = 'sepia(1) saturate(2) hue-rotate(-50deg)';
-            statusText.innerText = "EMERGENCY_LOCKOUT_ACTIVE";
-            statusText.style.color = "#ffb4ab";
-        });
     });
 </script>
 </body>
