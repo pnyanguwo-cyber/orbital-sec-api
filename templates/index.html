@@ -1,391 +1,532 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>ORBITAL SEC | Command Interface</title>
-
-   <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
-
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
-
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ORBITAL SEC v1.1.2 | COMMAND_INTERFACE</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#00285d",
+                        "on-secondary": "#68000a",
+                        "on-tertiary-container": "#461f00",
+                        "on-background": "#e4e1e9",
+                        "on-tertiary": "#502400",
+                        "surface-container-low": "#1b1b21",
+                        "outline": "#8c909f",
+                        "secondary-fixed-dim": "#ffb3ad",
+                        "surface-container": "#1f1f25",
+                        "on-error": "#690005",
+                        "background": "#131318",
+                        "on-secondary-fixed-variant": "#930013",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-variant": "#35343a",
+                        "surface-container-high": "#2a292f",
+                        "inverse-primary": "#005ac2",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#ffaea8",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed": "#410004",
+                        "primary-container": "#4d8eff",
+                        "surface-dim": "#131318",
+                        "on-primary": "#002e6a",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary-container": "#df7412",
+                        "surface": "#131318",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "outline-variant": "#424754",
+                        "inverse-on-surface": "#303036",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container-lowest": "#0e0e13",
+                        "surface-bright": "#39383f",
+                        "on-surface": "#e4e1e9",
+                        "on-surface-variant": "#c2c6d6",
+                        "inverse-surface": "#e4e1e9",
+                        "surface-container-highest": "#35343a",
+                        "secondary-fixed": "#ffdad7",
+                        "on-tertiary-fixed": "#311400",
+                        "tertiary": "#ffb786",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#adc6ff",
+                        "secondary": "#ffb3ad",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary-fixed": "#001a42",
+                        "primary": "#adc6ff",
+                        "secondary-container": "#a40217"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
     <style>
-        body {
-            background: #07070c;
-            color: #e2e8f0;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .scanline-overlay { background: linear-gradient(to bottom, transparent 50%, rgba(173, 198, 255, 0.02) 50%); background-size: 100% 4px; pointer-events: none; }
+        .scanner-line { height: 2px; background: #adc6ff; box-shadow: 0 0 15px #adc6ff; position: absolute; width: 100%; top: 0; animation: scan 4s linear infinite; }
+        @keyframes scan { 0% { top: 0%; opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .status-pulse { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse-ring { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.1); } }
+        
+        #map { height: 100%; width: 100%; background: #0e0e13; filter: invert(100%) hue-rotate(180deg) brightness(0.7) contrast(1.2); }
+        .leaflet-control-attribution { display: none !important; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0e0e13; }
+        ::-webkit-scrollbar-thumb { background: #adc6ff; }
+        .grid-bg { background-image: linear-gradient(rgba(173, 198, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(173, 198, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px; }
+        
+        .led-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-left: 6px; opacity: 0.3; animation: sequential-glow 1.5s infinite; }
+        .led-green { background: #4ade80; box-shadow: 0 0 8px #4ade80; animation-delay: 0s; }
+        .led-red { background: #f87171; box-shadow: 0 0 8px #f87171; animation-delay: 0.5s; }
+        .led-blue { background: #60a5fa; box-shadow: 0 0 8px #60a5fa; animation-delay: 1s; }
+
+        @keyframes sequential-glow {
+            0%, 33% { opacity: 1; transform: scale(1.2); }
+            34%, 100% { opacity: 0.3; transform: scale(1); }
         }
 
-        .glass-panel {
-            backdrop-filter: blur(20px);
-            background: rgba(15, 15, 25, 0.7);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            transition: all 0.3s ease;
+        .globe-container { position: relative; width: 140px; height: 140px; margin: 30px auto; perspective: 1000px; }
+        .globe-sphere { 
+            position: relative; width: 100%; height: 100%; transform-style: preserve-3d; 
+            animation: rotate-globe 15s linear infinite; 
         }
-
-        .glass-panel:hover {
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        .globe-circle { 
+            position: absolute; inset: 0; border: 1px solid rgba(173, 198, 255, 0.2); border-radius: 50%; 
         }
-
-        #map-container {
-            position: relative;
-            width: 100%;
-            height: 350px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+        .globe-circle:nth-child(2) { transform: rotateY(90deg); }
+        .globe-circle:nth-child(3) { transform: rotateX(90deg); }
+        
+        .packet { 
+            position: absolute; width: 4px; height: 4px; background: #adc6ff; border-radius: 50%; 
+            box-shadow: 0 0 8px #adc6ff; offset-path: border-box; animation: orbit 3s linear infinite; 
         }
+        .packet-1 { offset-path: path('M 70,0 A 70,70 0 1,1 69.9,0 Z'); animation-delay: -1s; }
+        .packet-2 { offset-path: path('M 70,0 A 70,70 0 1,1 69.9,0 Z'); animation-delay: -2.5s; }
 
-        #map {
-            height: 100%;
-            width: 100%;
-            z-index: 1;
-            filter: brightness(0.8) contrast(1.2) saturate(0.8);
-        }
+        @keyframes rotate-globe { 0% { transform: rotateX(15deg) rotateY(0deg); } 100% { transform: rotateX(15deg) rotateY(360deg); } }
+        @keyframes orbit { 0% { offset-distance: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
 
-        .scanner-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.8), transparent);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-            z-index: 10;
-            pointer-events: none;
-            animation: scan-vertical 4s linear infinite;
-        }
+        .spectrum-bar { animation: spectrum 0.8s ease-in-out infinite alternate; transform-origin: bottom; }
+        @keyframes spectrum { from { transform: scaleY(0.2); } to { transform: scaleY(1); } }
 
-        @keyframes scan-vertical {
-            0%, 100% { top: 0%; }
-            50% { top: 100%; }
-        }
-
-        .status-strip {
-            display: flex;
-            gap: 6px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            opacity: 0.3;
-        }
-
-        @keyframes status-pulse {
-            0%, 100% {
-                opacity: 0.2;
-                transform: scale(1);
-                filter: blur(0px);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.1);
-                filter: blur(1px);
-                box-shadow: 0 0 8px currentColor;
-            }
-        }
-
-        .dot-green { background: #22c55e; color: #22c55e; animation: status-pulse 2s infinite 0s; }
-        .dot-red { background: #ef4444; color: #ef4444; animation: status-pulse 2s infinite 0.6s; }
-        .dot-blue { background: #3b82f6; color: #3b82f6; animation: status-pulse 2s infinite 1.2s; }
-
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            pointer-events: none;
+        /* Mobile specific sidebar logic */
+        @media (max-width: 768px) {
+            #main-sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            #main-sidebar.open { transform: translateX(0); }
         }
     </style>
 </head>
+<body class="bg-surface-container-lowest text-on-surface font-body selection:bg-primary/30 min-h-screen overflow-x-hidden">
 
-<body class="selection:bg-blue-500/30">
-    <canvas id="bg-canvas"></canvas>
+<div class="fixed inset-0 pointer-events-none z-[100] scanline-overlay"></div>
+<div class="fixed inset-0 pointer-events-none opacity-[0.08] grid-bg"></div>
 
-    <header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#07070c]/80 backdrop-blur-xl border-b border-white/5">
-        <div class="flex items-center gap-4">
-            <div class="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                <span class="material-symbols-outlined text-blue-500">satellite_alt</span>
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-6 h-12 bg-[#131318] border-b border-outline-variant/10">
+    <div class="flex items-center gap-2 md:gap-4">
+        <button onclick="toggleSidebar()" class="md:hidden text-[#adc6ff] p-1">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+        <span class="text-sm md:text-lg font-bold tracking-tighter text-[#adc6ff] font-headline">ORBITAL SEC</span>
+        <div class="h-4 w-[1px] bg-outline-variant/30 hidden md:block"></div>
+        <span class="font-headline uppercase tracking-[0.1rem] text-[8px] md:text-[10px] text-[#8c909f]">NODE: <span class="text-[#adc6ff]">CHINHOYI</span></span>
+    </div>
+    <div class="flex items-center gap-3 md:gap-6">
+        <div class="flex flex-col items-end">
+            <span class="text-[8px] md:text-[9px] font-headline uppercase tracking-widest text-[#8c909f]">Author: P. Nyanguwo</span>
+            <a href="https://www.instagram.com/tilak.inc/" target="_blank" class="flex items-center gap-1.5 hover:text-white transition-colors group">
+                <svg class="w-2.5 h-2.5 md:w-3 md:h-3 fill-[#adc6ff] group-hover:fill-white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                <span class="text-[9px] md:text-[11px] font-mono text-[#adc6ff] group-hover:underline">tilak.inc</span>
+            </a>
+        </div>
+        <button class="hover:bg-[#4d8eff]/10 hover:text-white p-1 transition-all">
+            <span class="material-symbols-outlined text-[#adc6ff]">more_vert</span>
+        </button>
+    </div>
+</header>
+
+<aside id="main-sidebar" class="fixed left-0 top-12 h-[calc(100vh-3rem)] w-64 flex flex-col z-40 bg-[#0e0e13] border-r border-outline-variant/10 md:translate-x-0">
+    <div class="p-6">
+        <h2 class="text-[#adc6ff] font-bold font-headline tracking-tighter">COMMAND_INTERFACE</h2>
+        <p class="font-headline text-[9px] tracking-widest text-primary/60">V_TERMINAL_ACTIVE</p>
+    </div>
+
+    <div class="globe-container">
+        <div class="globe-sphere">
+            <div class="globe-circle">
+                <div class="packet packet-1"></div>
             </div>
-            <div>
-                <h1 class="font-mono font-bold text-lg tracking-tighter uppercase">ORBITAL SEC <span class="text-white/20">v1.1.2</span></h1>
-                <div class="flex items-center gap-3">
-                    <div class="status-strip">
-                        <div class="dot dot-green"></div>
-                        <div class="dot dot-red"></div>
-                        <div class="dot dot-blue"></div>
+            <div class="globe-circle">
+                <div class="packet packet-2"></div>
+            </div>
+            <div class="globe-circle"></div>
+        </div>
+    </div>
+
+    <nav class="flex-1 px-4 space-y-1">
+        <button onclick="switchPage('trace'); if(window.innerWidth < 768) toggleSidebar();" id="nav-trace" class="w-full flex items-center gap-3 px-4 py-3 bg-[#1f1f25] text-[#adc6ff] border-l-4 border-[#adc6ff] font-headline text-xs font-medium tracking-widest transition-all">
+            <span class="material-symbols-outlined text-sm">satellite_alt</span> Visual Trace
+        </button>
+        <button onclick="switchPage('ids'); if(window.innerWidth < 768) toggleSidebar();" id="nav-ids" class="w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 transition-opacity font-headline text-xs font-medium tracking-widest transition-all">
+            <span class="material-symbols-outlined text-sm">security</span> Sentinel_IDS
+        </button>
+    </nav>
+    <div class="p-4 border-t border-outline-variant/10 mb-8"> 
+        <button id="export-intel-btn" class="w-full bg-primary-container text-on-primary-container py-2 text-[10px] font-bold tracking-[0.2em] uppercase hover:shadow-[0_0_15px_rgba(77,142,255,0.4)] transition-all active:scale-[0.98]">
+            EXPORT INTEL
+        </button>
+    </div>
+</aside>
+
+<main class="md:ml-64 pt-12 pb-12 px-4 md:px-8">
+    <div id="page-trace" class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
+        <div class="md:col-span-8 space-y-6">
+            <section class="bg-surface-container backdrop-blur-[20px] relative border-l-2 border-primary/30">
+                <div class="p-4 flex flex-wrap justify-between items-center gap-2 border-b border-outline-variant/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-sm">explore</span>
+                        <h3 class="font-headline text-[10px] md:text-xs font-bold tracking-widest uppercase flex items-center">
+                            Visual Trace Engine
+                            <span class="led-dot led-green"></span>
+                            <span class="led-dot led-red"></span>
+                            <span class="led-dot led-blue"></span>
+                        </h3>
                     </div>
-                    <span class="text-[9px] font-mono text-white/40 uppercase tracking-widest">System Link Active</span>
+                    <div id="coords-display" class="flex items-center gap-2 text-[9px] font-mono text-primary/50">
+                        LAT: -18.8248 | LONG: 29.8191
+                    </div>
+                </div>
+
+                <div class="relative h-[300px] md:h-[400px] bg-surface-container-lowest overflow-hidden">
+                    <div id="map" class="absolute inset-0 z-10"></div>
+                    <div class="absolute top-4 left-4 z-40 bg-black/60 border border-primary/20 p-2 font-mono pointer-events-none">
+                        <div id="current-date" class="text-[9px] text-primary/70 mb-1 tracking-widest">YYYY-MM-DD</div>
+                        <div id="current-time" class="text-xs text-primary font-bold">00:00:00</div>
+                    </div>
+                    <div id="map-overlay" class="absolute inset-0 z-20 transition-opacity duration-1000 ease-in-out">
+                        <img alt="Satellite view" class="w-full h-full object-cover grayscale" 
+                             src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1000"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 flex items-center justify-center p-4">
+                            <span class="font-mono text-[10px] md:text-sm text-[#adc6ff] font-bold tracking-[0.5em] uppercase animate-pulse drop-shadow-[0_0_10px_#adc6ff] text-center">
+                                Waiting_for_Target_Lock...
+                            </span>
+                        </div>
+                    </div>
+                    <div class="scanner-line z-30"></div>
+                    <div class="absolute top-4 right-4 z-40">
+                        <div class="bg-black/80 px-3 py-1 border border-primary/20 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-primary status-pulse"></span>
+                            <span id="status-display" class="text-[9px] font-mono text-primary">SCANNING_ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-surface-container-high flex flex-col md:flex-row gap-3">
+                    <input id="target-input" class="flex-1 bg-surface-container-lowest border-0 border-b border-outline focus:border-primary focus:ring-0 text-xs font-mono py-3 px-4 placeholder:text-outline/40" placeholder="ENTER_TARGET_UUID_OR_IP..." type="text"/>
+                    <button id="trace-btn" class="bg-primary/10 border border-primary text-primary px-8 py-3 md:py-0 text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-on-primary transition-all">
+                        Initiate_Trace
+                    </button>
+                </div>
+            </section>
+
+            <section class="bg-surface-container backdrop-blur-[20px] border-l-2 border-secondary/30">
+                <div class="p-4 flex justify-between items-center border-b border-outline-variant/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary text-sm">database</span>
+                        <h3 class="font-headline text-xs font-bold tracking-widest uppercase">WHOIS_RECORDS</h3>
+                    </div>
+                </div>
+                <div class="p-4 bg-surface-container-lowest h-32 overflow-y-auto font-mono text-[10px] text-on-surface-variant">
+                    <div id="whois-output">[WAITING_FOR_DATA...]</div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="md:col-span-4 space-y-6">
+            <div class="bg-surface-container p-6 border-l-2 border-secondary">
+                <p class="text-[10px] uppercase tracking-[0.3em] text-outline mb-2 font-headline">Tunnel Latency</p>
+                <div class="flex items-center justify-between">
+                    <div id="ping-display" class="text-3xl font-mono font-light tracking-tighter text-secondary">14ms</div>
+                    <svg width="60" height="30" viewBox="0 0 40 20" class="text-secondary opacity-50">
+                        <rect x="0" y="8" width="3" height="12" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.1s" />
+                        <rect x="5" y="4" width="3" height="16" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.3s" />
+                        <rect x="10" y="10" width="3" height="10" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.2s" />
+                        <rect x="15" y="2" width="3" height="18" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.5s" />
+                        <rect x="20" y="6" width="3" height="14" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.1s" />
+                        <rect x="25" y="10" width="3" height="10" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.4s" />
+                        <rect x="30" y="3" width="3" height="17" fill="currentColor" class="spectrum-bar" style="animation-delay: 0.2s" />
+                    </svg>
                 </div>
             </div>
-        </div>
-        <div class="text-right hidden md:block">
-            <p class="text-[9px] font-mono text-white/20 uppercase">Chinhoyi Node</p>
-            <p class="text-[10px] font-mono text-blue-400">AUTH: P. NYANGUWO</p>
-        </div>
-    </header>
 
-    <main class="pt-28 pb-24 px-6 max-w-7xl mx-auto grid grid-cols-12 gap-6">
-        <div class="col-span-12 lg:col-span-8 space-y-6">
-            <section id="capture-area" class="glass-panel rounded-3xl p-6 min-h-[500px] flex flex-col relative overflow-hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xs font-mono text-blue-500 uppercase tracking-[0.2em]">Visual Trace Engine // Satellite</h2>
-                    <span class="text-[10px] font-mono text-white/20" id="clock">--:--:--</span>
+            <div class="bg-surface-container p-6 border-l-2 border-primary">
+                <p class="text-[10px] uppercase tracking-[0.3em] text-outline mb-2 font-headline">Session Uptime</p>
+                <div id="session-timer" class="text-3xl md:text-4xl font-mono font-light tracking-tighter text-primary">00:00:00</div>
+            </div>
+            <div class="bg-surface-container p-6 border-l-2 border-secondary">
+                <p class="text-[10px] uppercase tracking-[0.3em] text-outline mb-2 font-headline">Active IP</p>
+                <div id="active-ip-display" class="text-2xl font-mono font-light tracking-tighter text-secondary">0.0.0.0</div>
+            </div>
+            <div class="bg-surface-container p-6 border-l-2 border-error">
+                <p class="text-[10px] uppercase tracking-[0.3em] text-outline mb-2 font-headline">Threat_Level</p>
+                <div id="threat-level" class="text-xl font-mono font-bold text-error">NEUTRAL</div>
+                <div class="w-full bg-surface-container-low h-1 mt-4">
+                    <div id="threat-bar" class="bg-error h-full" style="width: 10%"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="page-ids" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
+        <div class="md:col-span-12">
+            <section class="bg-surface-container border-l-2 border-primary">
+                <div class="p-4 border-b border-outline-variant/10 flex flex-wrap justify-between items-center gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">security</span>
+                        <h3 class="font-headline text-xs font-bold tracking-widest uppercase">Sentinel IDS System Monitor</h3>
+                    </div>
+                    <span class="text-[9px] font-mono text-primary animate-pulse">SYSTEM_STATE: ARMED</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-1 p-4 bg-surface-container-low">
+                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
+                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Inbound Packets</p>
+                        <p id="packets-in" class="text-2xl font-mono text-primary font-light">1,240</p>
+                    </div>
+                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
+                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Blocked Payloads</p>
+                        <p id="payloads-blocked" class="text-2xl font-mono text-secondary font-light">42</p>
+                    </div>
+                    <div class="bg-surface-container-lowest p-4 border border-outline-variant/5">
+                        <p class="text-[9px] text-outline uppercase font-headline mb-1">Anomalies Detected</p>
+                        <p id="anomalies-count" class="text-2xl font-mono text-error font-light">03</p>
+                    </div>
                 </div>
 
-                <div id="map-container">
-                    <div class="scanner-line"></div>
-                    <div id="map"></div>
-                    <div class="absolute bottom-4 left-4 z-[1000] bg-black/70 backdrop-blur-md p-3 rounded-xl border border-white/10 font-mono text-[10px] pointer-events-none">
-                        <p class="text-blue-400">LAT: <span id="latC">-17.36</span></p>
-                        <p class="text-blue-400">LON: <span id="lonC">30.20</span></p>
+                <div class="p-4 bg-surface-container-lowest">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-[10px] font-headline font-bold uppercase tracking-widest">Real-time Threat Feed</span>
+                        <span class="text-[9px] font-mono text-outline">AUTO_REFRESH: 500ms</span>
+                    </div>
+                    <div id="ids-log" class="h-64 overflow-y-auto font-mono text-[10px] space-y-1 pr-2">
+                        <div class="text-primary/40">[SYS] IDS initialized...</div>
+                        <div class="text-primary/40">[SYS] Firewall rules sync complete.</div>
+                        <div class="text-primary/40">[SYS] Monitoring node: CHINHOYI_CENTRAL</div>
                     </div>
                 </div>
 
-                <div class="mt-6 flex gap-3">
-                    <input id="domainInput" type="text" placeholder="ENTER TARGET DOMAIN..." onkeydown="if(event.key==='Enter') runScan()"
-                        class="flex-grow bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-mono text-sm text-blue-400 outline-none focus:border-blue-500/50 transition-all">
-                    <button onclick="runScan()" class="bg-blue-600 hover:bg-blue-500 px-8 rounded-xl font-mono text-xs font-bold transition-all active:scale-95 text-white uppercase">Initiate_Trace</button>
-                </div>
-            </section>
-        </div>
-
-        <div class="col-span-12 lg:col-span-4 space-y-6">
-            <section class="glass-panel p-6 rounded-3xl">
-                <h3 class="text-[10px] font-mono uppercase text-white/40 mb-6 tracking-widest">Intercept Telemetry</h3>
-                <div class="space-y-4">
-                    <div class="p-4 bg-blue-500/5 rounded-2xl border border-white/5">
-                        <p class="text-[9px] text-white/30 uppercase mb-1">Target IP</p>
-                        <p id="resIP" class="text-blue-400 font-mono font-bold text-lg tracking-tight">---.---.---.---</p>
-                    </div>
-                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <p class="text-[9px] text-white/30 uppercase mb-1">Geospatial Node</p>
-                        <p id="resLoc" class="text-white font-mono text-sm uppercase">AWAITING TARGET...</p>
-                    </div>
-                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <p class="text-[9px] text-white/30 uppercase mb-1">Service Provider</p>
-                        <p id="resISP" class="text-white/60 font-mono text-[10px] italic">Not scanned</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="glass-panel p-6 rounded-3xl border-l-4 border-red-500/30">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-[10px] font-mono uppercase text-white/40 tracking-widest">Threat Intel (AbuseIPDB)</h3>
-                    <span id="threatLevel" class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/20 uppercase">No Data</span>
-                </div>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-end">
-                        <p class="text-[9px] text-white/30 uppercase">Confidence Score</p>
-                        <p id="abuseScore" class="text-xl font-mono font-bold text-white">--%</p>
-                    </div>
-                    <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                        <div id="scoreBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
-                    </div>
+                <div class="p-4 border-t border-outline-variant/10 flex flex-wrap gap-4">
+                    <button id="lockout-btn" class="flex-1 md:flex-none bg-error/10 border border-error/40 text-error text-[10px] font-bold px-4 py-2 uppercase hover:bg-error hover:text-white transition-all">Emergency Lockout</button>
+                    <button id="flush-btn" class="flex-1 md:flex-none bg-primary/10 border border-primary/40 text-primary text-[10px] font-bold px-4 py-2 uppercase hover:bg-primary hover:text-white transition-all">Flush Logs</button>
                 </div>
             </section>
-
-            <section class="glass-panel p-6 rounded-3xl">
-                <h3 class="text-[10px] font-mono uppercase text-white/40 mb-4 tracking-widest">Registration Data (WHOIS)</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-[8px] text-white/30 uppercase">Created</p>
-                        <p id="whoisCreated" class="text-[10px] font-mono text-blue-400">--/--/--</p>
-                    </div>
-                    <div>
-                        <p class="text-[8px] text-white/30 uppercase">Registrar</p>
-                        <p id="whoisRegistrar" class="text-[10px] font-mono text-white truncate">PENDING...</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="glass-panel p-6 rounded-3xl">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-[10px] font-mono text-white/40 uppercase tracking-widest">Uptime</p>
-                    <span class="text-green-500 text-[10px] font-mono animate-pulse uppercase">Live</span>
-                </div>
-                <p id="uptime" class="text-3xl font-mono font-bold text-white tracking-tighter">00:00:00:00</p>
-                <button onclick="downloadReport()" class="w-full mt-6 py-3 border border-blue-500/30 rounded-xl font-mono text-[10px] text-blue-400 hover:bg-blue-500/10 transition-all uppercase tracking-widest">EXPORT INTEL (.TXT)</button>
-            </section>
         </div>
-    </main>
+    </div>
+</main>
 
-    <footer class="fixed bottom-0 w-full z-50 px-8 py-4 bg-black/90 border-t border-white/5 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-sm text-blue-500">verified_user</span>
-            <span class="text-[10px] font-mono text-blue-500 font-bold tracking-widest uppercase">CFI Affiliate // Cyber Foundation of Investigation</span>
-        </div>
-        <p class="text-[9px] font-mono text-white/20 uppercase hidden sm:block">Protected by Sentinel Africa AI</p>
-    </footer>
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-[#0e0e13] border-t border-outline-variant/10 py-2 px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-1">
+    <div class="flex items-center gap-4">
+        <span class="text-[7px] md:text-[9px] font-headline uppercase tracking-widest text-[#8c909f] flex items-center gap-2">
+            <span class="w-2 h-2 bg-[#adc6ff] rounded-full animate-pulse"></span>
+            AFFILIATED WITH CFI
+        </span>
+    </div>
+    <div class="text-[7px] md:text-[9px] font-mono text-[#8c909f]/40 uppercase tracking-tighter">
+        Secure_Environment_Alpha
+    </div>
+</footer>
 
-    <script>
-        // CORE CONFIG
-        const API_BASE = "https://orbital-sec-api.onrender.com";
+<script>
+    // New function to handle mobile menu
+    function toggleSidebar() {
+        const sidebar = document.getElementById('main-sidebar');
+        sidebar.classList.toggle('open');
+    }
 
-        // 1. Map Init
-        const map = L.map('map', { zoomControl: false, attributionControl: false, fadeAnimation: true }).setView([-17.36, 30.20], 3);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        setTimeout(() => { map.invalidateSize(); }, 500);
-        let marker = null;
+    function switchPage(pageId) {
+        const tracePage = document.getElementById('page-trace');
+        const idsPage = document.getElementById('page-ids');
+        const navTrace = document.getElementById('nav-trace');
+        const navIds = document.getElementById('nav-ids');
 
-        // 2. Uptime Logic
-        const startTime = Date.now();
+        if (pageId === 'ids') {
+            tracePage.classList.add('hidden');
+            idsPage.classList.remove('hidden');
+            navIds.className = "w-full flex items-center gap-3 px-4 py-3 bg-[#1f1f25] text-[#adc6ff] border-l-4 border-[#adc6ff] font-headline text-xs font-medium tracking-widest transition-all";
+            navTrace.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 transition-opacity font-headline text-xs font-medium tracking-widest transition-all";
+        } else {
+            idsPage.classList.add('hidden');
+            tracePage.classList.remove('hidden');
+            navTrace.className = "w-full flex items-center gap-3 px-4 py-3 bg-[#1f1f25] text-[#adc6ff] border-l-4 border-[#adc6ff] font-headline text-xs font-medium tracking-widest transition-all";
+            navIds.className = "w-full flex items-center gap-3 px-4 py-3 text-[#8c909f] opacity-60 hover:bg-[#1f1f25] hover:opacity-100 transition-opacity font-headline text-xs font-medium tracking-widest transition-all";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let startTime = Date.now();
+        const timerDisplay = document.getElementById('session-timer');
+        const mapTime = document.getElementById('current-time');
+        const mapDate = document.getElementById('current-date');
+        
+        // Timer and General Updates
         setInterval(() => {
-            const diff = Date.now() - startTime;
-            const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-            document.getElementById('uptime').innerText = `00:${h}:${m}:${s}`;
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+            const now = new Date();
+            const elapsed = Date.now() - startTime;
+            const h = Math.floor(elapsed / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((elapsed % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+            timerDisplay.innerText = `${h}:${m}:${s}`;
+            mapTime.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+            mapDate.innerText = now.toISOString().split('T')[0];
+            
+            const ping = Math.floor(Math.random() * (45 - 12) + 12);
+            document.getElementById('ping-display').innerText = `${ping}ms`;
         }, 1000);
 
-        // 3. Background Animation
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let nodes = [];
-        function initNodes() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            nodes = Array.from({ length: 40 }, () => ({
-                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
-            }));
-        }
-        function drawNodes() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.08)";
-            ctx.fillStyle = "rgba(59, 130, 246, 0.2)";
-            nodes.forEach((n, i) => {
-                n.x += n.vx; n.y += n.vy;
-                if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
-                if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
-                ctx.beginPath(); ctx.arc(n.x, n.y, 1, 0, Math.PI * 2); ctx.fill();
-                nodes.slice(i + 1).forEach(n2 => {
-                    let d = Math.hypot(n.x - n2.x, n.y - n2.y);
-                    if (d < 180) { ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(n2.x, n2.y); ctx.stroke(); }
-                });
-            });
-            requestAnimationFrame(drawNodes);
-        }
-        window.addEventListener('resize', initNodes);
-        initNodes(); drawNodes();
+        // IDS Log Simulator
+        const idsLog = document.getElementById('ids-log');
+        const threatTypes = ["Port Scan", "SQL Injection Attempt", "DDoS Burst", "Brute Force", "Malformed Packet"];
+        const ips = ["192.168.1.105", "45.77.12.4", "103.21.244.0", "141.101.64.0"];
 
-        // 4. Trace Logic
-        async function runScan() {
-            const domain = document.getElementById('domainInput').value.trim();
-            if (!domain) return;
+        setInterval(() => {
+            if (document.getElementById('page-ids').classList.contains('hidden')) return;
+            
+            const logEntry = document.createElement('div');
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const type = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+            const ip = ips[Math.floor(Math.random() * ips.length)];
+            
+            logEntry.className = "border-l border-primary/20 pl-2 mb-1 log-item";
+            logEntry.innerHTML = `<span class="text-outline">[${time}]</span> <span class="text-secondary">ALERT</span>: ${type} from <span class="text-primary underline">${ip}</span> - <span class="text-error">MITIGATED</span>`;
+            
+            idsLog.prepend(logEntry);
+            if (idsLog.children.length > 50) idsLog.lastChild.remove();
 
-            document.getElementById('resIP').innerText = "SCANNING...";
-            document.getElementById('whoisRegistrar').innerText = "FETCHING...";
-            document.getElementById('threatLevel').innerText = "ANALYZING...";
+            // Randomize IDS stats
+            document.getElementById('packets-in').innerText = (parseInt(document.getElementById('packets-in').innerText.replace(',','')) + Math.floor(Math.random()*10)).toLocaleString();
+        }, 2000);
+
+        // Map Initialization
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-18.8248, 29.8191], 3);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const scanBtn = document.getElementById('trace-btn');
+        const input = document.getElementById('target-input');
+        const scannerLine = document.querySelector('.scanner-line');
+        const statusText = document.getElementById('status-display');
+        const overlay = document.getElementById('map-overlay');
+
+        const startScan = async () => {
+            const target = input.value.trim();
+            if (!target) return;
+
+            statusText.innerText = `TRACING_TARGET: ${target}`;
+            statusText.classList.replace('text-primary', 'text-secondary');
+            scannerLine.style.animationDuration = '1s';
 
             try {
-                const res = await fetch(`${API_BASE}/scan/${domain}`);
-                const data = await res.json();
-
-                if (data.status === "success") {
-                    const targetIP = data.ip;
-                    document.getElementById('resIP').innerText = targetIP;
-                    document.getElementById('resLoc').innerText = `${data.city}, ${data.country}`;
-                    document.getElementById('resISP').innerText = data.isp;
-                    document.getElementById('latC').innerText = data.lat.toFixed(4);
-                    document.getElementById('lonC').innerText = data.lon.toFixed(4);
-
-                    if (marker) map.removeLayer(marker);
-                    marker = L.circleMarker([data.lat, data.lon], { color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.4, radius: 15 }).addTo(map);
-                    map.flyTo([data.lat, data.lon], 9, { duration: 3 });
-
-                    fetchAbuseData(targetIP);
-                    fetchWhoisData(domain);
-                } else {
-                    document.getElementById('resIP').innerText = "NOT_FOUND";
-                }
-            } catch (e) {
-                console.error(e);
-                document.getElementById('resIP').innerText = "ENGINE_ERR";
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+                    map.flyTo([-18.8248, 29.8191], 13, { animate: true, duration: 3 });
+                    L.circleMarker([-18.8248, 29.8191], { color: '#ffb3ad', radius: 10 }).addTo(map);
+                    
+                    document.getElementById('active-ip-display').innerText = target.includes('.') ? target : "192.168.1.1";
+                    document.getElementById('threat-level').innerText = "CRITICAL";
+                    document.getElementById('threat-bar').style.width = "95%";
+                }, 2000);
+            } catch (err) {
+                console.error("Backend offline.");
+            } finally {
+                setTimeout(() => {
+                    scannerLine.style.animationDuration = '4s';
+                    statusText.innerText = "SCANNING_ACTIVE";
+                    statusText.classList.replace('text-secondary', 'text-primary');
+                }, 5000);
             }
-        }
+        };
 
-        async function fetchAbuseData(ip) {
-            try {
-                const res = await fetch(`${API_BASE}/proxy/abuse/${ip}`);
-                const result = await res.json();
-                const score = result.data.abuseConfidenceScore;
+        scanBtn.addEventListener('click', startScan);
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') startScan(); });
 
-                document.getElementById('abuseScore').innerText = `${score}%`;
-                document.getElementById('scoreBar').style.width = `${score}%`;
+        // --- EXPORT INTEL LOGIC UPDATED ---
+        const exportBtn = document.getElementById('export-intel-btn');
+        exportBtn.addEventListener('click', () => {
+            const now = new Date();
+            const timestamp = now.toLocaleString();
+            const activeIP = document.getElementById('active-ip-display').innerText;
+            const threatLevel = document.getElementById('threat-level').innerText;
 
-                const level = document.getElementById('threatLevel');
-                level.innerText = score > 30 ? "SUSPICIOUS" : "CLEAN";
-                level.className = score > 30 ? "text-[9px] font-mono px-2 py-0.5 rounded bg-red-500/20 text-red-500 animate-pulse" : "text-[9px] font-mono px-2 py-0.5 rounded bg-green-500/20 text-green-500";
-                document.getElementById('scoreBar').className = score > 70 ? "h-full bg-red-500 transition-all duration-1000" : "h-full bg-blue-500 transition-all duration-1000";
-            } catch (e) {
-                document.getElementById('threatLevel').innerText = "INTEL_ERR";
-            }
-        }
-
-        // --- NEW UPDATED WHOIS FUNCTION ---
-        async function fetchWhoisData(domain) {
-            try {
-                const res = await fetch(`${API_BASE}/proxy/whois/${domain}`);
-                const data = await res.json();
-                
-                // 1. Get Creation Date
-                const created = data.events?.find(e => e.eventAction === 'registration')?.eventDate;
-                document.getElementById('whoisCreated').innerText = created ? new Date(created).toLocaleDateString() : "PRIVATE";
-
-                // 2. Get Registrar (Bulletproof Logic)
-                const registrarEntity = data.entities?.find(ent => ent.roles.includes('registrar'));
-                
-                if (registrarEntity && registrarEntity.vcardArray) {
-                    const fnEntry = registrarEntity.vcardArray[1].find(item => item[0] === 'fn');
-                    document.getElementById('whoisRegistrar').innerText = fnEntry ? fnEntry[3] : "UNKNOWN";
-                } else {
-                    document.getElementById('whoisRegistrar').innerText = "PROTECTED";
-                }
-            } catch (e) {
-                console.error("WHOIS Error:", e);
-                document.getElementById('whoisRegistrar').innerText = "NOT_FOUND";
-            }
-        }
-
-        // 5. Download Report
-        function downloadReport() {
-            const domain = document.getElementById('domainInput').value || "N/A";
-            const reportContent = `
+            const intelReport = `
 ==================================================
 ORBITAL SEC | SENTINEL INTEL REPORT
-Generated: ${new Date().toLocaleString()}
+Generated: ${timestamp}
 ==================================================
-Target: ${domain}
-IP: ${document.getElementById('resIP').innerText}
-ISP: ${document.getElementById('resISP').innerText}
-Location: ${document.getElementById('resLoc').innerText}
-Abuse Score: ${document.getElementById('abuseScore').innerText}
-Registrar: ${document.getElementById('whoisRegistrar').innerText}
+
+[ TARGET INFORMATION ]
+Domain:      ${activeIP === "0.0.0.0" ? "UNDEFINED" : "DETECTED_HOST"}
+IP Address:  ${activeIP}
+ISP:         ORBITAL_VIRTUAL_NET
+
+[ GEOSPATIAL TELEMETRY ]
+Location:    CHINHOYI, ZIMBABWE, MASHONALAND
+Latitude:    -18.8248
+Longitude:   29.8191
+
+[ THREAT INTELLIGENCE ]
+Abuse Confidence Score: ${threatLevel === "CRITICAL" ? "98%" : "05%"}
+Threat Classification:  ${threatLevel}
+
+[ REGISTRATION DATA (WHOIS) ]
+Registration Date:      ${new Date().toLocaleDateString()}
+Primary Registrar:      UNKNOWN
+
 ==================================================
 END OF TRACE REPORT // AUTH: P. NYANGUWO
-CFI - CYBER FOUNDATION OF INVESTIGATION
-==================================================`;
+==================================================`.trim();
+            
+            const blob = new Blob([intelReport], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SENTINEL_REPORT_${Date.now()}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
 
-            const blob = new Blob([reportContent.trim()], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.download = `ORBITAL-REPORT-${domain}.txt`;
-            link.href = window.URL.createObjectURL(blob);
-            link.click();
-        }
-    </script>
+        // Flush Logs Button
+        const flushBtn = document.getElementById('flush-btn');
+        flushBtn.addEventListener('click', () => {
+            idsLog.innerHTML = '<div class="text-secondary animate-pulse">[SYS] LOGS_FLUSHED_SUCCESSFULLY</div>';
+            setTimeout(() => {
+                idsLog.innerHTML = '<div class="text-primary/40">[SYS] Monitoring resumed...</div>';
+            }, 2000);
+        });
+
+        // Emergency Lockout Button
+        const lockoutBtn = document.getElementById('lockout-btn');
+        lockoutBtn.addEventListener('click', () => {
+            document.body.style.filter = 'sepia(1) saturate(2) hue-rotate(-50deg)';
+            statusText.innerText = "EMERGENCY_LOCKOUT_ACTIVE";
+            statusText.style.color = "#ffb4ab";
+        });
+    });
+</script>
 </body>
 </html>
